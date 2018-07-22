@@ -1,36 +1,48 @@
-import React from 'react'
-// import * as BooksAPI from './BooksAPI'
+import React, { Component } from 'react'
+import * as BooksAPI from '../../BooksAPI'
 import Shelf from '../../components/Shelf'
 import './App.css'
 
-class BooksApp extends React.Component {
-  state = {
-    showSearchPage: false,
-    shelfs: [
-      {
-        title: "Currently Reading",
-        books: [{
-          imageURL: "http://books.google.com/books/content?id=PGR2AwAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73-GnPVEyb7MOCxDzOYF1PTQRuf6nCss9LMNOSWBpxBrz8Pm2_mFtWMMg_Y1dx92HT7cUoQBeSWjs3oEztBVhUeDFQX6-tWlWz1-feexS0mlJPjotcwFqAg6hBYDXuK_bkyHD-y&source=gbs_api",
-          title: "title",
-          author: "author"
-        }]
-      }, {
-        title: "Want to Read",
-        books: [{
-          imageURL: "http://books.google.com/books/content?id=PGR2AwAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73-GnPVEyb7MOCxDzOYF1PTQRuf6nCss9LMNOSWBpxBrz8Pm2_mFtWMMg_Y1dx92HT7cUoQBeSWjs3oEztBVhUeDFQX6-tWlWz1-feexS0mlJPjotcwFqAg6hBYDXuK_bkyHD-y&source=gbs_api",
-          title: "title",
-          author: "author"
-        }]
-      }, {
-        title: "Read",
-        books: [{
-          imageURL: "http://books.google.com/books/content?id=PGR2AwAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73-GnPVEyb7MOCxDzOYF1PTQRuf6nCss9LMNOSWBpxBrz8Pm2_mFtWMMg_Y1dx92HT7cUoQBeSWjs3oEztBVhUeDFQX6-tWlWz1-feexS0mlJPjotcwFqAg6hBYDXuK_bkyHD-y&source=gbs_api",
-          title: "title",
-          author: "author"
-        }]
-      }]
+class BooksApp extends Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      showSearchPage: false,
+      books: [],
+      shelfs: [
+        { title: "Currently Reading", shelfId: "currentlyReading" },
+        { title: "Want to Read", shelfId: "wantToRead" },
+        { title: "Read", shelfId: "read" }
+      ]
+    }
   }
 
+  componentDidMount() {
+    this.fetchAll()
+  }
+
+  updateBooks = (newBooks) => {
+    this.setState({ books: newBooks })
+  }
+
+  fetchAll = () => {
+    BooksAPI
+      .getAll()
+      .then(this.updateBooks)
+      .catch(this.showError)
+  } 
+
+  changeBookToShelf = (book, shelf) => {
+    BooksAPI
+      .update({ id: book.id }, shelf)
+      .then(this.fetchAll)
+      .catch(this.showError)
+  }
+
+  showError = (error) => {
+    console.log("Updated Books Error", error)
+  } 
   render() {
     return (
       <div className="app">
@@ -40,7 +52,18 @@ class BooksApp extends React.Component {
             </div>
             <div className="list-books-content">
               <div>
-              { this.state.shelfs.map(shelf => (<Shelf title={shelf.title} books={shelf.books}/>)) }
+              { 
+                this.state.shelfs.map(shelf => (
+                  <Shelf 
+                    key={ shelf.title }
+                    title={ shelf.title } 
+                    books={this.state.books.filter(book => book.shelf === shelf.shelfId) }
+                    handleMoveBook={(book, toShelf) => { 
+                      this.changeBookToShelf(book, toShelf)
+                    }}
+                  />
+                ))
+              }
               </div>
             </div>
             <div className="open-search">

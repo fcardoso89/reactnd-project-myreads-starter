@@ -8,7 +8,21 @@ const Shelf = props => (
         <h2 className="bookshelf-title">{props.title}</h2>
         <div className="bookshelf-books">
             <ol className="books-grid">
-                {props.books.map(book => (<li><Book title={book.title} author={book.author} imageURL={book.imageURL}/></li>))}
+                {
+                    props.books.map(book => (
+                        <li key={book.id}>
+                        <Book 
+                            shelf={book.shelf} 
+                            title={book.title} 
+                            author={book.authors[0]} 
+                            imageURL={book.imageLinks.thumbnail}
+                            handleMoveBook={(toShelf) => {
+                                props.handleMoveBook(book, toShelf)
+                            }}
+                        />
+                        </li>
+                        )
+                    )}
             </ol>
         </div>
     </div>
