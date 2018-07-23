@@ -97,7 +97,7 @@ class SearchScreen extends Component {
                                         shelf={selectedBook && selectedBook.shelf}
                                         title={book.title}
                                         authors={book.authors}
-                                        imageURL={book.imageLinks.thumbnail}
+                                        imageURL={(book.imageLinks && book.imageLinks.thumbnail) || ""}
                                         handleMoveBook={(shelf) => {
                                             this.changeBookToShelf(book, shelf)
                                         }}

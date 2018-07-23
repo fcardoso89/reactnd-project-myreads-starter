@@ -15,7 +15,7 @@ const Shelf = props => (
                             shelf={book.shelf} 
                             title={book.title} 
                             authors={book.authors} 
-                            imageURL={book.imageLinks.thumbnail}
+                            imageURL={(book.imageLinks && book.imageLinks.thumbnail) || ""}
                             handleMoveBook={(toShelf) => {
                                 props.handleMoveBook(book, toShelf)
                             }}
