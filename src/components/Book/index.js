@@ -1,20 +1,15 @@
 import React, { Component } from 'react'
 import './styles.css'
 
-// Stateless component
 class Book extends Component {
-    constructor(props) {
-        super(props)
-    }
-
     render() {
         return (
         <div className="book">
             <div className="book-top">
                 <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url("${this.props.imageURL}")` }}></div>
                     <div className="book-shelf-changer">
-                        <select ref="bookStateSelector" value={this.props.shelf} onChange={ (e) => { 
-                            if (this.refs.bookStateSelector.value !== 'none') {
+                        <select ref="bookStateSelector" value={this.props.shelf || "none"} onChange={ (e) => { 
+                            if (this.refs.bookStateSelector.value !== 'None') {
                                 this.props.handleMoveBook(this.refs.bookStateSelector.value)
                             }
                             }}>
@@ -27,7 +22,7 @@ class Book extends Component {
                     </div>
                 </div>
             <div className="book-title">{this.props.title}</div>
-            <div className="book-authors">{this.props.author}</div>
+            <div className="book-authors">{this.props.authors && this.props.authors.join(', ')}</div>
     </div>
 )
 }

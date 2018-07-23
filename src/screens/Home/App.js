@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import * as BooksAPI from '../../BooksAPI'
 import Shelf from '../../components/Shelf'
 import './App.css'
@@ -43,6 +44,7 @@ class BooksApp extends Component {
   showError = (error) => {
     console.log("Updated Books Error", error)
   } 
+  
   render() {
     return (
       <div className="app">
@@ -67,7 +69,7 @@ class BooksApp extends Component {
               </div>
             </div>
             <div className="open-search">
-              <a onClick={() => this.setState({ showSearchPage: true })}>Add a book</a>
+            <Link to={'/search'}>Teste</Link>
             </div>
           </div>
       </div>
