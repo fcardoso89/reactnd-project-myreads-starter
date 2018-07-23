@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { debounce } from "throttle-debounce"
+import Loading from 'react-loading-components'
 import * as BooksAPI from '../../BooksAPI'
 import Book from '../../components/Book'
 import './styles.css'
@@ -12,7 +13,8 @@ class SearchScreen extends Component {
         this.autocompleteSearchDebounce = debounce(300, this.autocompleteSearch)
         this.state = {
             query: null,
-            books: []
+            books: [],
+            searching: false
         }
     }
 
@@ -27,6 +29,9 @@ class SearchScreen extends Component {
     };
 
     search = query => {
+        
+        this.setState({ searching: true })
+
         if(query) {
             BooksAPI
                 .search(query)
@@ -42,12 +47,49 @@ class SearchScreen extends Component {
     } 
 
     showSearchResult = (result, query) => {
-        if ((result.error || null) === null) {
-            this.setState({ books: result, query: query })
-        } else {
-            this.setState({ books: [], query: query })
-        }
+        this.setState({ 
+            books: ((result.error || null) === null) ? result : [],
+            query: query, 
+            searching: false
+        })
     }
+
+    loadingComponent = () => (
+        <Loading type='oval' width={60} height={60} fill='#32CD32' />
+    )
+
+    screenMessage = (message) => (
+        <div> <h2>{message}</h2> </div>
+    )
+
+    searchResults = (books, myBooks) => {
+
+        if(books.length <= 0) {
+            return this.screenMessage("No Results")
+        } else {
+            return (
+                <ol className="books-grid">{
+                    books.map((book) => {
+                        const viewedBook = myBooks.filter(myBook => (myBook.id === book.id))[0]
+                        return (
+                            <li key={book.id}>
+                                <Book
+                                    shelf={viewedBook && viewedBook.shelf}
+                                    title={book.title}
+                                    authors={book.authors}
+                                    imageURL={(book.imageLinks && book.imageLinks.thumbnail) || ""}
+                                    handleMoveBook={(shelf) => {
+                                        this.props.changeBookToShelf(book, shelf)
+                                    }}
+                                />
+                            </li>
+                        )
+                    })
+                }
+                </ol>
+            )
+        }
+    } 
 
     render() {
         return (
@@ -65,24 +107,7 @@ class SearchScreen extends Component {
                     </div>
                 </div>
                 <div className="search-books-results">
-                    <ol className="books-grid">{
-                        this.state.books.map((book) => {
-                            const viewedBook = this.props.books.filter(myBook => (myBook.id === book.id))[0]
-                            return (
-                                <li key={book.id}>
-                                    <Book
-                                        shelf={viewedBook && viewedBook.shelf}
-                                        title={book.title}
-                                        authors={book.authors}
-                                        imageURL={(book.imageLinks && book.imageLinks.thumbnail) || ""}
-                                        handleMoveBook={(shelf) => {
-                                            this.props.changeBookToShelf(book, shelf)
-                                        }}
-                                    />
-                                </li>
-                            )
-                        })
-                        }</ol>
+                    {this.state.searching ? this.loadingComponent() : this.searchResults(this.state.books, this.props.books)}
                 </div>
             </div>
         )

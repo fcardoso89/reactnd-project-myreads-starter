@@ -25,6 +25,7 @@ class BooksApp extends Component {
                     key={ shelf.title }
                     title={ shelf.title } 
                     books={this.props.books.filter(book => book.shelf === shelf.shelfId) }
+                    loading={this.props.loading}
                     handleMoveBook={(book, toShelf) => { 
                       this.props.changeBookToShelf(book, toShelf)
                     }}

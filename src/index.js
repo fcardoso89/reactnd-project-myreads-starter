@@ -10,6 +10,7 @@ class Main extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            loading: false,
             books: []
         }
     }
@@ -19,6 +20,7 @@ class Main extends Component {
     }
 
     fetchAll = () => {
+        this.setState({loading: true})
         BooksAPI
             .getAll()
             .then(this.updateBooks)
@@ -33,7 +35,7 @@ class Main extends Component {
     }
 
     updateBooks = (newBooks) => {
-        this.setState({ books: newBooks })
+        this.setState({ books: newBooks, loading: false })
     }
 
     showError = (error) => {
@@ -44,7 +46,7 @@ class Main extends Component {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route path="/" exact={true} render={(props) => <App books={this.state.books} changeBookToShelf={this.changeBookToShelf} {...props} />} />
+                    <Route path="/" exact={true} render={(props) => <App books={this.state.books} changeBookToShelf={this.changeBookToShelf} loading={this.state.loading} {...props} />} />
                     <Route path="/search" render={(props) => <SearchScreen books={this.state.books} changeBookToShelf={this.changeBookToShelf} {...props} />} />
                 </Switch>
             </ BrowserRouter>
