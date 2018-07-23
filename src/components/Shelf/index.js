@@ -14,7 +14,7 @@ const Shelf = props => (
                         <Book 
                             shelf={book.shelf} 
                             title={book.title} 
-                            author={book.authors[0]} 
+                            authors={book.authors} 
                             imageURL={book.imageLinks.thumbnail}
                             handleMoveBook={(toShelf) => {
                                 props.handleMoveBook(book, toShelf)

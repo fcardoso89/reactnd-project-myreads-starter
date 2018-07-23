@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import * as BooksAPI from '../../BooksAPI'
 import Shelf from '../../components/Shelf'
 import './App.css'
@@ -41,8 +42,9 @@ class BooksApp extends Component {
   }
 
   showError = (error) => {
-    console.log("Updated Books Error", error)
+    window.alert("Houve um erro tente novamente.");
   } 
+  
   render() {
     return (
       <div className="app">
@@ -51,8 +53,7 @@ class BooksApp extends Component {
               <h1>MyReads</h1>
             </div>
             <div className="list-books-content">
-              <div>
-              { 
+              <div> { 
                 this.state.shelfs.map(shelf => (
                   <Shelf 
                     key={ shelf.title }
@@ -67,7 +68,7 @@ class BooksApp extends Component {
               </div>
             </div>
             <div className="open-search">
-              <a onClick={() => this.setState({ showSearchPage: true })}>Add a book</a>
+              <Link to={'/search'}>Teste</Link>
             </div>
           </div>
       </div>
