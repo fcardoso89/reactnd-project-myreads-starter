@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import { debounce } from "throttle-debounce"
+import Loading from 'react-loading-components'
 import * as BooksAPI from '../../BooksAPI'
 import Book from '../../components/Book'
 import './styles.css'
@@ -8,54 +10,85 @@ class SearchScreen extends Component {
 
     constructor(props){
         super(props)
+        this.autocompleteSearchDebounce = debounce(300, this.autocompleteSearch)
         this.state = {
             query: null,
-            myBooks: [],
-            books: []
+            books: [],
+            searching: false
         }
     }
 
-    componentDidMount() {
-        
-        if(this.state.myBooks.length === 0) {
-            this.fetchAll()
-        }
+    changeQuery = event => {
+        this.setState({ query: event.target.value }, () => {
+            this.autocompleteSearchDebounce(this.state.query);
+        });
+    };
 
-        const search = this.props.location.search
-        const params = new URLSearchParams(search)
-        const newQuery = params.get('query')
-        this.search(newQuery)
-    }
+    autocompleteSearch = query => {
+        this.search(query);
+    };
 
     search = query => {
+        
+        this.setState({ searching: true })
 
-        if((this.state.query === query) || (query === '')) {
-            this.setState({ books:[], query: null })
-            return
+        if(query) {
+            BooksAPI
+                .search(query)
+                .then((result) => { this.showSearchResult(result, query) })
+                .catch(this.showError)
+        } else {
+            this.showSearchResult([], query)
         }
-
-        BooksAPI
-            .search(query)
-            .then((result) => { this.setState({ books: result || [], query: query }) })
-            .catch(this.showError)
     }
 
     showError = (error) => {
-        window.alert("Houve um erro tente novamente.", error);
+        window.alert(`Error: ${error}`);
     } 
 
-    changeBookToShelf = (book, shelf) => {
-        BooksAPI
-            .update({ id: book.id }, shelf)
-            .then(() => { this.fetchAll() }) 
-            .catch(this.showError)
+    showSearchResult = (result, query) => {
+        this.setState({ 
+            books: ((result.error || null) === null) ? result : [],
+            query: query, 
+            searching: false
+        })
     }
 
-    fetchAll = () => {
-        BooksAPI
-            .getAll()
-            .then((result) => { this.setState({ myBooks: result}) })
-            .catch(this.showError)
+    loadingComponent = () => (
+        <Loading type='oval' width={60} height={60} fill='#32CD32' />
+    )
+
+    screenMessage = (message) => (
+        <div> <h2>{message}</h2> </div>
+    )
+
+    searchResults = (books, myBooks) => {
+
+        if(books.length <= 0) {
+            return this.screenMessage("No Results")
+        } else {
+            return (
+                <ol className="books-grid">{
+                    books.map((book) => {
+                        const viewedBook = myBooks.filter(myBook => (myBook.id === book.id))[0]
+                        return (
+                            <li key={book.id}>
+                                <Book
+                                    shelf={viewedBook && viewedBook.shelf}
+                                    title={book.title}
+                                    authors={book.authors}
+                                    imageURL={(book.imageLinks && book.imageLinks.thumbnail) || ""}
+                                    handleMoveBook={(shelf) => {
+                                        this.props.changeBookToShelf(book, shelf)
+                                    }}
+                                />
+                            </li>
+                        )
+                    })
+                }
+                </ol>
+            )
+        }
     } 
 
     render() {
@@ -64,30 +97,17 @@ class SearchScreen extends Component {
                 <div className="search-books-bar">
                     <Link className="close-search" to={"/"}>Teste</Link>
                     <div className="search-books-input-wrapper">
-                        <form action="/search">
-                            <input type="text" id="search-field" name="query" placeholder="Search by title or author" />
-                        </form>
+                        <input 
+                            type="text" 
+                            id="search-field"
+                            name="query" 
+                            placeholder="Search by title or author"
+                            onChange={this.changeQuery}
+                        />
                     </div>
                 </div>
                 <div className="search-books-results">
-                    <ol className="books-grid">{
-                        this.state.books.map((book) => {
-                            const selectedBook = this.state.myBooks.filter(myBook => (myBook.id === book.id))[0]
-                            return (
-                                <li key={book.id}>
-                                    <Book
-                                        shelf={selectedBook && selectedBook.shelf}
-                                        title={book.title}
-                                        authors={book.authors}
-                                        imageURL={book.imageLinks.thumbnail}
-                                        handleMoveBook={(shelf) => {
-                                            this.changeBookToShelf(book, shelf)
-                                        }}
-                                    />
-                                </li>
-                            )
-                        })
-                        }</ol>
+                    {this.state.searching ? this.loadingComponent() : this.searchResults(this.state.books, this.props.books)}
                 </div>
             </div>
         )
