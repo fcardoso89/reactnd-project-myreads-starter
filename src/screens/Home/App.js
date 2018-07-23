@@ -42,7 +42,7 @@ class BooksApp extends Component {
   }
 
   showError = (error) => {
-    console.log("Updated Books Error", error)
+    window.alert("Houve um erro tente novamente.");
   } 
   
   render() {
@@ -53,8 +53,7 @@ class BooksApp extends Component {
               <h1>MyReads</h1>
             </div>
             <div className="list-books-content">
-              <div>
-              { 
+              <div> { 
                 this.state.shelfs.map(shelf => (
                   <Shelf 
                     key={ shelf.title }
@@ -69,7 +68,7 @@ class BooksApp extends Component {
               </div>
             </div>
             <div className="open-search">
-            <Link to={'/search'}>Teste</Link>
+              <Link to={'/search'}>Teste</Link>
             </div>
           </div>
       </div>

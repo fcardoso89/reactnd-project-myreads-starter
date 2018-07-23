@@ -41,13 +41,13 @@ class SearchScreen extends Component {
     }
 
     showError = (error) => {
-        console.log("Updated Books Error", error)
+        window.alert("Houve um erro tente novamente.", error);
     } 
 
     changeBookToShelf = (book, shelf) => {
         BooksAPI
             .update({ id: book.id }, shelf)
-            .then(() => {}) 
+            .then(() => { this.fetchAll() }) 
             .catch(this.showError)
     }
 
