@@ -5,17 +5,18 @@ import Shelf from '../../components/Shelf'
 import './App.css'
 
 class BooksApp extends Component {
+  
+  shelfs = [
+    { title: "Currently Reading", shelfId: "currentlyReading" },
+    { title: "Want to Read", shelfId: "wantToRead" },
+    { title: "Read", shelfId: "read" }
+  ]
 
   constructor(props) {
     super(props)
     this.state = {
       showSearchPage: false,
       books: [],
-      shelfs: [
-        { title: "Currently Reading", shelfId: "currentlyReading" },
-        { title: "Want to Read", shelfId: "wantToRead" },
-        { title: "Read", shelfId: "read" }
-      ]
     }
   }
 
@@ -54,7 +55,7 @@ class BooksApp extends Component {
             </div>
             <div className="list-books-content">
               <div> { 
-                this.state.shelfs.map(shelf => (
+                this.shelfs.map(shelf => (
                   <Shelf 
                     key={ shelf.title }
                     title={ shelf.title } 
