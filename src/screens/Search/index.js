@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import { debounce } from "throttle-debounce"
 import * as BooksAPI from '../../BooksAPI'
 import Book from '../../components/Book'
 import './styles.css'
@@ -8,6 +9,7 @@ class SearchScreen extends Component {
 
     constructor(props){
         super(props)
+        this.autocompleteSearchDebounce = debounce(300, this.autocompleteSearch)
         this.state = {
             query: null,
             myBooks: [],
@@ -16,33 +18,45 @@ class SearchScreen extends Component {
     }
 
     componentDidMount() {
-        
-        if(this.state.myBooks.length === 0) {
-            this.fetchAll()
-        }
 
-        const search = this.props.location.search
-        const params = new URLSearchParams(search)
-        const newQuery = params.get('query')
-        this.search(newQuery)
     }
 
+    componentWillUnmount() {
+        this.autocompleteSearchDebounce.cancel()
+    }
+
+    changeQuery = event => {
+        this.setState({ query: event.target.value }, () => {
+            this.autocompleteSearchDebounce(this.state.query);
+        });
+    };
+
+    autocompleteSearch = query => {
+        this.search(query);
+    };
+
     search = query => {
-
-        if((this.state.query === query) || (query === '')) {
-            this.setState({ books:[], query: null })
-            return
+        if(query) {
+            BooksAPI
+                .search(query)
+                .then((result) => { this.showSearchResult(result, query) })
+                .catch(this.showError)
+        } else {
+            this.showSearchResult([], query)
         }
-
-        BooksAPI
-            .search(query)
-            .then((result) => { this.setState({ books: result || [], query: query }) })
-            .catch(this.showError)
     }
 
     showError = (error) => {
-        window.alert("Houve um erro tente novamente.", error);
+        window.alert(`Error: ${error}`);
     } 
+
+    showSearchResult = (result, query) => {
+        if ((result.error || null) === null) {
+            this.setState({ books: result, query: query })
+        } else {
+            this.setState({ books: [], query: query })
+        }
+    }
 
     changeBookToShelf = (book, shelf) => {
         BooksAPI
@@ -56,7 +70,7 @@ class SearchScreen extends Component {
             .getAll()
             .then((result) => { this.setState({ myBooks: result}) })
             .catch(this.showError)
-    } 
+    }
 
     render() {
         return (
@@ -64,9 +78,13 @@ class SearchScreen extends Component {
                 <div className="search-books-bar">
                     <Link className="close-search" to={"/"}>Teste</Link>
                     <div className="search-books-input-wrapper">
-                        <form action="/search">
-                            <input type="text" id="search-field" name="query" placeholder="Search by title or author" />
-                        </form>
+                        <input 
+                            type="text" 
+                            id="search-field"
+                            name="query" 
+                            placeholder="Search by title or author"
+                            onChange={this.changeQuery}
+                        />
                     </div>
                 </div>
                 <div className="search-books-results">
