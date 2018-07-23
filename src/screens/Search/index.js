@@ -12,17 +12,8 @@ class SearchScreen extends Component {
         this.autocompleteSearchDebounce = debounce(300, this.autocompleteSearch)
         this.state = {
             query: null,
-            myBooks: [],
             books: []
         }
-    }
-
-    componentDidMount() {
-
-    }
-
-    componentWillUnmount() {
-        this.autocompleteSearchDebounce.cancel()
     }
 
     changeQuery = event => {
@@ -58,21 +49,8 @@ class SearchScreen extends Component {
         }
     }
 
-    changeBookToShelf = (book, shelf) => {
-        BooksAPI
-            .update({ id: book.id }, shelf)
-            .then(() => { this.fetchAll() }) 
-            .catch(this.showError)
-    }
-
-    fetchAll = () => {
-        BooksAPI
-            .getAll()
-            .then((result) => { this.setState({ myBooks: result}) })
-            .catch(this.showError)
-    }
-
     render() {
+        console.log(this.props)
         return (
             <div className="search-books">
                 <div className="search-books-bar">
@@ -90,16 +68,16 @@ class SearchScreen extends Component {
                 <div className="search-books-results">
                     <ol className="books-grid">{
                         this.state.books.map((book) => {
-                            const selectedBook = this.state.myBooks.filter(myBook => (myBook.id === book.id))[0]
+                            const viewedBook = this.props.books.filter(myBook => (myBook.id === book.id))[0]
                             return (
                                 <li key={book.id}>
                                     <Book
-                                        shelf={selectedBook && selectedBook.shelf}
+                                        shelf={viewedBook && viewedBook.shelf}
                                         title={book.title}
                                         authors={book.authors}
                                         imageURL={(book.imageLinks && book.imageLinks.thumbnail) || ""}
                                         handleMoveBook={(shelf) => {
-                                            this.changeBookToShelf(book, shelf)
+                                            this.props.changeBookToShelf(book, shelf)
                                         }}
                                     />
                                 </li>
